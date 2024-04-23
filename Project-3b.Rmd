@@ -12,6 +12,12 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r}
+library(tidyverse)
+library(tidyr)
+library(leaps)
+youtube <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-02/youtube.csv')
+head(youtube)
+youtube$popular<- with(youtube,ifelse(view_count>200000,1,0))
 
 ```
 
