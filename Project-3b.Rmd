@@ -70,10 +70,9 @@ print(missing_counts)
 
 ```
 
-
-
 ```{r}
 #change to binary features
+#remove the unused features
 
 youtube <- youtube %>%
   mutate_if(is.logical, as.integer)
@@ -96,3 +95,21 @@ head(youtube)
 
 youtube$popular<- with(youtube,ifelse(view_count>200000,1,0))
 ```
+
+
+```{r}
+#EDA plots 
+
+#avg view count by year
+ggplot(year_viewcount, aes(x = as.factor(year), y = avg_view_count)) +
+  geom_bar(stat = "identity", fill = "lightgreen", color = "black") +
+  labs(title = "AVG View Count by Year",
+       x = "Year",
+       y = "AVG View Count") +
+  theme_minimal()
+
+
+
+
+```
+
