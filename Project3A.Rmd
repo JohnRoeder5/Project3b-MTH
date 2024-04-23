@@ -1,0 +1,326 @@
+---
+title: "Project 3A"
+author: "John Roeder"
+date: "2024-04-11"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(pscl)
+library(glm2)
+library(dplyr)
+library(ggplot2)
+library(Metrics)
+library(MASS)
+```
+
+##  Introduction
+> The dataset for this project is the Superbowl Commercial data. This dataset has 25 columns with 247 entries. It consists of numeric counts, character values, binary true/false values, and date time values for its datatypes. My initial thoughts towards this dataset are that I need to remove the columns like etag, id, kind, and the URLs that can't really be used as explanatory variables for this task. Aside from that I have decided to make the true false variables 0 and 1 The research question for this dataset is: what factors may lead to a popular commercial during the super bowl?
+
+
+
+```{r}
+data <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-02/youtube.csv')
+
+head(data)
+summary(data)
+
+
+```
+
+```{r}
+#preprocessing step here: 
+
+num_columns <- ncol(data)
+print(paste("Total Columns: ", num_columns))
+
+
+columns =colnames(data)
+print(columns)
+#also check for nans
+nas <- colSums(is.na(data))
+
+
+cols_w_nas <- names(nas[nas > 0])
+print("cols w Nans")
+print(cols_w_nas)
+
+#get the total missing for each col. 
+
+missing_counts <- colSums(is.na(data))
+print(missing_counts)
+
+
+```
+## Preprocessing
+
+> The preprocessing steps that I took for this dataset mostly concerned checking for NaN cell values in the columns of the dataset. It can be seen that there are some columns like the view count, kind, and etag column that have very few missin cell values, but also columns like thumbnail and description that are missing quite a few cell values. Given the nature of this dataset, I decided to fill the numeric cells with the median value for that individual column. 
+
+
+```{r}
+
+
+
+#for numeric cols w emptys
+numeric_cols <- c("like_count", "dislike_count", "favorite_count", "comment_count", "view_count")
+for (col in numeric_cols) {
+  median_value <- median(data[[col]], na.rm = TRUE)  
+  data[[col]][is.na(data[[col]])] <- median_value 
+}
+
+data <- data[!is.na(data$published_at), ]
+
+head(data)
+
+#check again to see if fixes worked. 
+missing_counts <- colSums(is.na(data))
+print(missing_counts)
+
+```
+
+
+##  EDA
+
+
+```{r}
+
+year_distribution <- data %>%
+  group_by(year) %>%
+  summarise(count = n()) %>%
+  arrange(year)
+
+
+ggplot(year_distribution, aes(x = as.factor(year), y = count)) +
+  geom_bar(stat = "identity", fill = "lightgreen", color = "black") +
+  labs(title = "ads by year",
+       x = "Year",
+       y = "# of ads") +
+  theme_minimal()
+
+
+
+brand_viewcount <- data %>%
+  group_by(brand) %>%
+  summarise(avg_view_count = mean(view_count))
+
+
+ggplot(brand_viewcount, aes(x = brand, y = avg_view_count)) +
+  geom_bar(stat = "identity", fill = "skyblue", color = "black") +
+  labs(title = "AVG view count by brand",
+       x = "Brand",
+       y = "AVG View Count") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+year_viewcount <- data %>%
+  group_by(year) %>%
+  summarise(avg_view_count = mean(view_count))
+
+
+ggplot(year_viewcount, aes(x = as.factor(year), y = avg_view_count)) +
+  geom_bar(stat = "identity", fill = "lightgreen", color = "black") +
+  labs(title = "AVG View Count by Year",
+       x = "Year",
+       y = "AVG View Count") +
+  theme_minimal()
+
+
+ggplot(data, aes(x = view_count, y = like_count)) +
+  geom_point(color = "blue") +
+  labs(title = "Like Count vs. View Count",
+       x = "View Count",
+       y = "Like Count") +
+  theme_minimal()
+
+ggplot(data, aes(x = view_count, y = dislike_count)) +
+  geom_point(color = "blue") +
+  labs(title = "Dislike by viewcount",
+       x = "view count",
+       y = "dislike count") +
+  theme_minimal()
+
+
+```
+> The response variable that I have chosen to test for our research question is view_counts. View_counts is a feature that captures the views that an ad gets. Because of this , I believe that it will accurately capture a relationship between itself and the factors that define an ads popularity. Views are important, because the more views an ad has, the more likely someone is to do business with the company running the successful ads. Also, given the different commercial types available in this dataframe, I think view_counts will be able to show which commercial type is the most successful. 
+
+>The distribution of ads per year is just to get an idea of how many ads were being run in a given year. At the most companies were running 15 ads in a given year. The average view count by brand just gives some insight as to which brands might've been the most successful with their advertising. It can clearly be seen that both the NFL and Doritos have been much more successful than their counterparts. The average view count per year plot shows which years had the most successful brands. Lastly the two scatter plots are used to display the relationship between the like count and the view count for a given ad. There is a small indication of a positive relationship between these two features, but most of the data is found in the lower left hand corner of the plot. The view count and dislike count pot is an attempt to find out if more controversial ads would gain more viewers, but this plot shows a similar relationship as that which was found between likes and views. Overall, there is a positive trend between dislikes and views as well. 
+
+```{r}
+
+
+commercial_viewcount <- data %>%
+  summarise(
+    funny_viewcount = sum(view_count * funny),
+    show_product_quickly_viewcount = sum(view_count * show_product_quickly),
+    patriotic_viewcount = sum(view_count * patriotic),
+    celebrity_viewcount = sum(view_count * celebrity),
+    danger_viewcount = sum(view_count * danger),
+    animals_viewcount = sum(view_count * animals),
+    use_sex_viewcount = sum(view_count * use_sex)
+  ) %>%
+  pivot_longer(cols = everything(), 
+               names_to = "commercial_type", values_to = "total_viewcount")
+
+
+ggplot(commercial_viewcount, aes(x = commercial_type, y = total_viewcount)) +
+  geom_bar(stat = "identity", fill = "skyblue", color = "black") +
+  labs(title = "Total View by commercial type",
+       x = "Commercial type",
+       y = "total view count") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+> Here is a plot showing he relationship between the different commercial types and their aggregate view counts. From this plot it is reasonable to guess that showing the product quickly in a commercial and having a funny commercial are successful stragtegies for generating ad viewership. Below is a plot of the view_counts distribution. Initially this distribution looked like a poisson distribution, but after taking the loig of the feature, it appears to hav a normal distribution. 
+
+
+
+```{r}
+ggplot(data, aes(x = log(view_count))) +
+  geom_density(fill = "skyblue", color = "black") 
+
+print(data$view_count)
+  
+```
+> A little more data preprocessing to remove things like the ad description, title, and the thumbnail among other features that are mostly character types. These features would have to be removed to run any kind of linear regression or GLM. 
+
+```{r}
+
+data <- data %>%
+  mutate_if(is.logical, as.integer)
+
+data <- subset(data, select = -c(brand,
+                                  superbowl_ads_dot_com_url,
+                                  youtube_url,
+                                  id,
+                                  kind,
+                                  etag,
+                                  published_at,
+                                  title,
+                                  description,
+                                  thumbnail,
+                                  channel_title,
+                                  category_id, 
+                                  favorite_count))
+
+head(data)
+
+
+```
+
+> Below is the first model I am trying: linear regression. I chose a linear regression model to start because the response variable view_count isn't technically a continuous variable, but it fit a normal distribution when taking the log of it. That paired with the amount of numeric features in the dataset makes it make sense to start with this model. 
+
+```{r}
+
+lm = lm(log(view_count) ~., data=data)
+
+summary(lm)
+plot(lm)
+
+```
+
+> The linear regression model only has one statistically significant feature being the comment count on the video ad. When analyzing the diagnostic plots, it is clear that even though the log of our response variable is normally distributed, the linearity and homoscedasticity assumptions are being violated in this model. This makes this model not a great fit for this data given the assumptions that it violated. 
+
+
+
+
+```{r}
+
+
+neg <- glm.nb(view_count ~ . , data = data, link= "sqrt", 
+              control = glm.control(maxit = 1000, trace = TRUE))
+summary(neg)
+plot(neg)
+
+neg_log <- glm.nb(view_count ~ ., data = data, link= "log", 
+                  control = glm.control(maxit = 1000, trace = TRUE))
+summary(neg_log)
+plot(neg_log)
+
+
+residual_deviance <- summary(neg)$deviance
+df <- summary(neg)$df.residual
+
+
+overdispersion_parameter <- residual_deviance / df
+print(overdispersion_parameter)
+
+```
+> This next model is a negative binomial model using the square root link function and then the same thing but with the log link function. Both of these models have overdispersion parameters that indicate that there is some extra overdispersion that is not accounted for by the negative binomial models. For the negative binomial model the statistically significant features are the year, the funny commercial type, the showing the product quickly commerical type, the danger commerical type, the like, dislike, and comment counts. For the negative binomial with the log link function there are the commetn count. the like count, the shoing the product quickly commercial type, and the danger commerical type.  Overall this model does have some statistically significant features but it does have a worrying AIC value. Alongside this, the diagnostic plots do not indicate homoscedasticity for either model, although the sqrt link function model has better spread for the constant variance than the log link model. Overall the negative binomial with the sqrt link function appears to perform better given its diagnostic plots even though it has a higher AIC score. 
+
+
+
+
+
+```{r}
+#comparison: 
+
+lm_AIC <- AIC(lm)
+lm_deviance <- deviance(lm)
+lm_coefficients <- coef(lm)
+
+nb_AIC <- AIC(neg)
+nb_deviance <- deviance(neg)
+nb_coefficients <- coef(neg)
+
+nb_log_AIC <- AIC(neg_log)
+nb_log_deviance <- deviance(neg_log)
+nb_log_coefficients <- coef(neg_log)
+
+comparison <- data.frame(
+  Model = c("Linear Regression", "Negative Binomial", "Negative Binomial w Log"),
+  AIC = c(lm_AIC, nb_AIC, nb_log_AIC),
+  Deviance = c(lm_deviance, nb_deviance, nb_log_deviance)
+)
+
+print(comparison)
+
+```
+
+> In comparing the three models it appears that the linear regression model is the best fit for the dataset given the low AIC level. The second best model of the three would be the negative binomial using the sqrt link function. However given the better fit for the dataset that can be seen by evaluating the diagnostic plots of each of the three models, I believe that the best model for this task is the best negative binomial model, which uses the sqrt linkn function. 
+
+
+
+
+```{r}
+
+library(coefplot)
+
+neg_coefficients <- coef(neg)
+
+print(neg_coefficients)
+
+
+predictions <- predict(neg, newdata = data, type = "response")
+
+
+actual_values <- data$view_count
+rmse <- sqrt(mean((predictions - actual_values)^2))
+print(paste("RMSE:", rmse))
+
+```
+
+
+> In analyzing the final model, it can be seen that statistically significant features like the like count can lead to approximately 30 more views per unit increase in likes. Alongside this the danger commmercial type can lead to approximately 37 more views per unit increase. It can also be seen that showing the product quickly is not an advisable strategy as it results in -0.2 unit decrease in viewers per unit increase. However, in checking RMSE it can be seen that the negative binomial model has a huge value which indicates that it is not successfully predicting values for view_count. 
+
+
+```{r}
+residuals <- residuals(neg, type = "pearson")
+hist(residuals, breaks = 20, col = "skyblue", border = "white", 
+     main = "Histogram of Residuals", xlab = "Residuals")
+
+```
+
+
+> looking at this visualization of the histogram of residuals, it can be seen that this is not a normal distribution and that there cold be some problems with the negative binomial model. 
+
+## Conclusion
+
+> Overall, I don't feel that I've found a model that is successfully capturing what factors are significant towards creating a successful ad for the super bowl. Loosely we can say that the negative binomial model did have plenty of features that were found to be significant, including some commercial types. However, the negative binomial has performed poorly when looking at its diagnostics and its AIC and deviance. Alongside things like the huge RMSE, this model does not appear to be fit to evaluate viewer predictions. Using this model to answer the research question though: The factors that lead to a popular commercial are using a dangerous commercial type and avoiding showing the product quickly. Danger was found to increase the viewership the most so it appears to be the strategy to implement, while showing the product quickly was found to lower the viewer count which negatively impacts your total reach. 
+
+> In terms of future work with this project I would like to get more into the interactions between the features themselves. I did some work with this on this project where I made interaction terms but none of it was good enough to include in the actual project. Also, I would like to try and better understand the best model with view_count as the response variable. It appeared to be count data since it was discrete and a count of views. It had a distribution that fit that of a poisson model, but it had no zeros so I couldn't use zero-inflated. Whenever I used Poisson regression it was way too overfit to where every feature was at the highest significance level, including interaction terms. negative binomial made the most sense given the smaller overdispersion parameters, the distribution, and the data being count data. So in terms of future work I would like to find ways to better manipulate and feature engineer this dataset to where the factors that are most important to making a popular ad are able to be captured. 

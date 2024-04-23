@@ -23,8 +23,7 @@ library(tidyverse)
 library(tidyr)
 library(leaps)
 youtube <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-02/youtube.csv')
-head(youtube)
-youtube$popular<- with(youtube,ifelse(view_count>200000,1,0))
+
 
 ```
 
@@ -63,10 +62,37 @@ for (col in numeric_cols) {
 
 youtube <- youtube[!is.na(youtube$published_at), ]
 
-head(data)
+head(youtube)
 
 #check again to see if fixes worked. 
 missing_counts <- colSums(is.na(youtube))
 print(missing_counts)
 
+```
+
+
+
+```{r}
+#change to binary features
+
+youtube <- youtube %>%
+  mutate_if(is.logical, as.integer)
+
+youtube <- subset(youtube, select = -c(brand,
+                                  superbowl_ads_dot_com_url,
+                                  youtube_url,
+                                  id,
+                                  kind,
+                                  etag,
+                                  published_at,
+                                  title,
+                                  description,
+                                  thumbnail,
+                                  channel_title,
+                                  category_id, 
+                                  favorite_count))
+
+head(youtube)
+
+youtube$popular<- with(youtube,ifelse(view_count>200000,1,0))
 ```
