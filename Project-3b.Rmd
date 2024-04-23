@@ -46,3 +46,27 @@ print(missing_counts)
 
 
 ```
+
+
+
+```{r}
+
+#for numeric cols w emptys
+numeric_cols <- c("like_count", "dislike_count", "favorite_count", "comment_count", "view_count")
+for (col in numeric_cols) {
+  median_value <- median(youtube[[col]], na.rm = TRUE)  
+  youtube[[col]][is.na(youtube[[col]])] <- median_value 
+}
+
+youtube <- youtube[!is.na(youtube$published_at), ]
+
+head(data)
+
+#check again to see if fixes worked. 
+missing_counts <- colSums(is.na(youtube))
+print(missing_counts)
+
+```
+
+
+
