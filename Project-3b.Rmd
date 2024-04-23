@@ -25,6 +25,24 @@ youtube$popular<- with(youtube,ifelse(view_count>200000,1,0))
 
 ```{r}
 # preprocessing 
+num_columns <- ncol(youtube)
+print(paste("Total Columns: ", num_columns))
+
+#get col names 
+#also check for nans
+columns =colnames(youtube)
+print(columns)
+nas <- colSums(is.na(youtube))
+
+#find cols w nans
+cols_w_nas <- names(nas[nas > 0])
+print("cols w Nans")
+print(cols_w_nas)
+
+#get the total missing for each col and print
+missing_counts <- colSums(is.na(youtube))
+print(missing_counts)
+
 
 
 ```
