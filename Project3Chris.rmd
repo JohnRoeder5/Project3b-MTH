@@ -8,9 +8,8 @@ Date Modified: Monday, 2024/04/15, 00:56
 class: MTH362 Statistical Modeling
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-warning=FALSE
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE) 
 ```
 
 ## Introduction
@@ -21,7 +20,7 @@ The dataset comes from FiveThirtyEight, a statistics focused news website that r
 library(tidyverse)
 library(tidyr)
 library(leaps)
-youtube = read.csv("youtube.csv")
+youtube <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-02/youtube.csv')
 head(youtube)
 youtube$popular<- with(youtube,ifelse(view_count>200000,1,0))
 ```
