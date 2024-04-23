@@ -23,8 +23,6 @@ library(tidyverse)
 library(tidyr)
 library(leaps)
 youtube <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-02/youtube.csv')
-
-
 ```
 
 The dataset contains 247 observations of 25 variables. A derived boolean variable called `popular` was created using `view_count`, using an arbitrarily selected limit of 200,000 as a marker for a popular commercial video. As commercials ran during the Superbowl are expensive, it makes sense to set the standards of `popular` higher rather than lower. `popular` will be the response variable investigated in this project.
@@ -70,8 +68,6 @@ print(missing_counts)
 
 ```
 
-
-
 ```{r}
 #change to binary features
 
@@ -91,8 +87,26 @@ youtube <- subset(youtube, select = -c(brand,
                                   channel_title,
                                   category_id, 
                                   favorite_count))
-
-head(youtube)
-
 youtube$popular<- with(youtube,ifelse(view_count>200000,1,0))
+head(youtube)
 ```
+
+## EDA
+
+
+
+```{r}
+ggplot(data=youtube,aes(x=popular))+geom_bar()+labs(title="Popular plot")
+```
+
+## Model
+
+```{r}
+logit.reg<- glm(popular ~ funny+ show_product_quickly+patriotic+celebrity+danger+animals+use_sex+like_count+dislike_count,data=youtube)
+summary(logit.reg)
+```
+
+## Analysis
+
+## Conclusion
+
