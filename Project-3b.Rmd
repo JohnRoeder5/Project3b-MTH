@@ -1,15 +1,21 @@
 ---
 title: "Project3b-MTH"
-author: "John Roeder"
+author: "John Roeder, Chris He, Malakai Vetock"
 date: "2024-04-23"
+date: "`r Sys.Date()`"
 output: pdf_document
+Date Created: Tuesday, 2024/04/23, 14:45
+Date Modified: Monday, 2024/04/23, 14:50
+class: MTH362 Statistical Modeling
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE) 
 ```
 
+## Introduction
 
+The dataset comes from FiveThirtyEight, a statistics focused news website that reported on sports, politics, and science.It contains the information of 233 ads from 10 brands that aired the most ad spots in 21 Superbowls ranging from 2000 to 2021 on the social media platform known as YouTube. The research question that is being investigated is "What factors may lead to a popular commercial during the super bowl? Given that the Superbowl is one of the most watched events each year with the most expensive ad slots, it makes sense to investigate factors that impact popularity and perception of money spent on ads during the Superbowl.
 
 ```{r}
 library(tidyverse)
@@ -21,6 +27,7 @@ youtube$popular<- with(youtube,ifelse(view_count>200000,1,0))
 
 ```
 
+The dataset contains 247 observations of 25 variables. A derived boolean variable called `popular` was created using `view_count`, using an arbitrarily selected limit of 200,000 as a marker for a popular commercial video. As commercials ran during the Superbowl are expensive, it makes sense to set the standards of `popular` higher rather than lower. `popular` will be the response variable investigated in this project.
 
 
 ```{r}
@@ -42,7 +49,3 @@ print(cols_w_nas)
 #get the total missing for each col and print
 missing_counts <- colSums(is.na(youtube))
 print(missing_counts)
-
-
-
-```
