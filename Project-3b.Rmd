@@ -24,5 +24,7 @@ youtube$popular<- with(youtube,ifelse(view_count>200000,1,0))
 
 
 ```{r}
+# preprocessing 
+
 
 ```
