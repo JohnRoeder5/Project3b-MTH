@@ -48,6 +48,9 @@ print(cols_w_nas)
 missing_counts <- colSums(is.na(youtube))
 print(missing_counts)
 ```
+The preprocessing steps that we took for this dataset started off with checking for NaN cell values in the columns of the dataset. It can be seen that there are some columns like the view count, kind, and etag column that have very few missing cell values, but also columns like thumbnail and description that are missing quite a few cell values. Given the nature of this dataset, we felt that it was reasonable to fill the numeric cells with the median value for that individual column. replacing the NAN values happens in the chunk below.
+
+
 
 ```{r}
 
@@ -92,6 +95,8 @@ youtube$popular<- with(youtube,ifelse(view_count>200000,1,0))
 
 head(youtube)
 ```
+Our last step of datapreprocessing is removing the unwanted columns. Columns like superbowl_ads_dot_com_url, youtube_url, id,kind, etag, published_at, title, description, thumbnail, channel_title, category_id, and favorite_count are not necessary for our goal of predicting what makes a popular superbowl ad. These columns were mostly text data that would not work for our chosen model type of logistic regression. 
+
 
 ## EDA
 
@@ -112,16 +117,37 @@ ggplot(year_viewcount, aes(x = as.factor(year), y = avg_view_count)) +
   theme_minimal()
 
 
+commercial_viewcount <- data %>%
+  summarise(
+    funny_viewcount = sum(view_count * funny),
+    show_product_quickly_viewcount = sum(view_count * show_product_quickly),
+    patriotic_viewcount = sum(view_count * patriotic),
+    celebrity_viewcount = sum(view_count * celebrity),
+    danger_viewcount = sum(view_count * danger),
+    animals_viewcount = sum(view_count * animals),
+    use_sex_viewcount = sum(view_count * use_sex)
+  ) %>%
+  pivot_longer(cols = everything(), 
+               names_to = "commercial_type", values_to = "total_viewcount")
 
+
+ggplot(commercial_viewcount, aes(x = commercial_type, y = total_viewcount)) +
+  geom_bar(stat = "identity", fill = "skyblue", color = "black") +
+  labs(title = "Total View by commercial type",
+       x = "Commercial type",
+       y = "total view count") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+ggplot(data=youtube,aes(x=popular))+geom_bar(fill= "skyblue")+labs(title="Popular plot")
 
 
 ```
-The above plot shows the average viewership of superbowl ads by year. 2012 had the highest average viewership followed by 2017 and 2020. This provides a visual of the relative increase in average viewership per superbowl ad. 
+The above plot shows the average viewership of superbowl ads by year. 2012 had the highest average viewership followed by 2017 and 2020. This provides a visual of the relative increase in average viewership per superbowl ad. The total view by commercial type plot shows the total view counts across the different types of commercials. It can clearly be seen that the funny commercials and commercials that show products quickly have performed well in the past based on total view counts. Lastly the popular plot shows the counts of popular and unpopular superbowl commercials determined by our cutoff value of greater than 200,000 views. There are disproportionately more unpopular commercials as opposed to popular commercials per our metric. 
 
 
-```{r}
-ggplot(data=youtube,aes(x=popular))+geom_bar()+labs(title="Popular plot")
-```
+
 
 
 ## Model
