@@ -99,6 +99,10 @@ head(youtube)
 ```{r}
 #EDA plots 
 
+
+year_viewcount <- data %>%
+  group_by(year) %>%
+  summarise(avg_view_count = mean(view_count))
 #avg view count by year
 ggplot(year_viewcount, aes(x = as.factor(year), y = avg_view_count)) +
   geom_bar(stat = "identity", fill = "lightgreen", color = "black") +
@@ -108,7 +112,12 @@ ggplot(year_viewcount, aes(x = as.factor(year), y = avg_view_count)) +
   theme_minimal()
 
 
+
+
+
 ```
+The above plot shows the average viewership of superbowl ads by year. 2012 had the highest average viewership followed by 2017 and 2020. This provides a visual of the relative increase in average viewership per superbowl ad. 
+
 
 ```{r}
 ggplot(data=youtube,aes(x=popular))+geom_bar()+labs(title="Popular plot")
