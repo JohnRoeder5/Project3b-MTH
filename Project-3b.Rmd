@@ -48,7 +48,8 @@ print(cols_w_nas)
 missing_counts <- colSums(is.na(youtube))
 print(missing_counts)
 ```
-The preprocessing steps that we took for this dataset started off with checking for NaN cell values in the columns of the dataset. It can be seen that there are some columns like the view count, kind, and etag column that have very few missing cell values, but also columns like thumbnail and description that are missing quite a few cell values. Given the nature of this dataset, we felt that it was reasonable to fill the numeric cells with the median value for that individual column. replacing the NAN values happens in the chunk below.
+
+All Nan cell values were checked. Some of them had missing values, which were filled with the median value of each column. Given that the dataset size was relatively small to begin with, it did not feel fitting to further reduce the dataset by dropping the entire row of data that contained a Nan.
 
 
 
@@ -95,7 +96,7 @@ youtube$popular<- with(youtube,ifelse(view_count>200000,1,0))
 
 head(youtube)
 ```
-Our last step of datapreprocessing is removing the unwanted columns. Columns like superbowl_ads_dot_com_url, youtube_url, id,kind, etag, published_at, title, description, thumbnail, channel_title, category_id, and favorite_count are not necessary for our goal of predicting what makes a popular superbowl ad. These columns were mostly text data that would not work for our chosen model type of logistic regression. 
+The last step of data preprocessing is removing the unwanted columns. Columns like superbowl_ads_dot_com_url, youtube_url, id,kind, etag, published_at, title, description, thumbnail, channel_title, category_id, and favorite_count are not necessary for the goal of predicting what makes a popular superbowl ad. These columns were mostly text data that would not work for a logistic regression model.
 
 
 ## EDA
@@ -157,10 +158,21 @@ logit.reg<- glm(popular ~ funny+ show_product_quickly+patriotic+celebrity+danger
 summary(logit.reg)
 ```
 
-Like count and show product quickly were the only two significant predictors in the model with a p value below 0.05.  The intercept had a p value of 0.09 and was deemed significant enough to be put into the model, resulting in the following model.
+Like count and show product quickly were the only two significant predictors in the model with a p value below 0.05, resulting in the following model.
 
-$logit(p)=0.1195+1.275\text{show_product_quickly}+8.454e^{-06}\text{like_count}$
 
+```{r}
+logit.reg2<- glm(popular ~show_product_quickly+like_count,data=youtube)
+summary(logit.reg2)
+```
+
+$$logit(p)=0.1221+0.1100\text{show_product_quickly}+5.443e^{-06}\text{like_count}$$
+
+
+If a commercial shows their product quickly, odds of popularity increase by $e^{0.1221}=1.12986708284$
+
+
+Per a unit increase in like count, the odds of popularity increase by $e^{5.443e^{-06}}=1.00000544201$
 
 ## Analysis
 
