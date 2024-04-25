@@ -105,7 +105,7 @@ Our last step of datapreprocessing is removing the unwanted columns. Columns lik
 #EDA plots 
 
 
-year_viewcount <- data %>%
+year_viewcount <- youtube %>%
   group_by(year) %>%
   summarise(avg_view_count = mean(view_count))
 #avg view count by year
@@ -117,7 +117,7 @@ ggplot(year_viewcount, aes(x = as.factor(year), y = avg_view_count)) +
   theme_minimal()
 
 
-commercial_viewcount <- data %>%
+commercial_viewcount <- youtube %>%
   summarise(
     funny_viewcount = sum(view_count * funny),
     show_product_quickly_viewcount = sum(view_count * show_product_quickly),
@@ -169,7 +169,7 @@ $logit(p)=0.1195+1.275\text{show_product_quickly}+8.454e^{-06}\text{like_count}$
 ggplot(data=youtube,aes(x=like_count,y=popular))+geom_jitter(alpha=0.5, height=0.1) + geom_smooth(method='glm', method.args=list(family='binomial'), se=TRUE) + labs(x='like_count', y='Popular?: 0 = No, 1 = Yes')
 ```
 
-It appears once like counts hits a certain point, the video will be popular.
+It appears once the feature like counts hits a certain point, the video will be popular.
 
 
 ```{r}
