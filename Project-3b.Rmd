@@ -155,9 +155,17 @@ The above plot shows the average viewership of superbowl ads by year. 2012 had t
 ```{r}
 logit.reg<- glm(popular ~ funny+ show_product_quickly+patriotic+celebrity+danger+animals+use_sex+like_count+dislike_count,data=youtube)
 summary(logit.reg)
+
+
+#check for multicollinearity
+car::vif(logit.reg)
 ```
 
 Like count and show product quickly were the only two significant predictors in the model with a p value below 0.05, resulting in the following model.
+
+Assessing the variance inflation factors to check for multicollinearity, it can be seen that this dataset does not exhibit multicollinearity. All of our vif values are within a reasonable range being under 5 to indicate that there is no multicollinearity. . 
+
+$logit(p)=0.1195+1.275\text{show_product_quickly}+8.454e^{-06}\text{like_count}$
 
 
 ```{r}
