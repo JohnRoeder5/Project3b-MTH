@@ -1,11 +1,12 @@
-
 ---
-title: "Project3b-MTH"
+title: project3b
 author: "John Roeder, Chris He, Malakai Vetock"
 date: "`r Sys.Date()`"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
 Date Created: Tuesday, 2024/04/23, 14:45
-Date Modified: Monday, 2024/04/23, 14:50
+Date Modified: Thursday, 2024/04/25, 14:44
 class: MTH362 Statistical Modeling
 ---
 
@@ -25,7 +26,6 @@ youtube <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/ti
 ```
 
 The dataset contains 247 observations of 25 variables. A derived boolean variable called `popular` was created using `view_count`, using an arbitrarily selected limit of 200,000 as a marker for a popular commercial video. As commercials ran during the Superbowl are expensive, it makes sense to set the standards of `popular` higher rather than lower. `popular` will be the response variable investigated in this project.
-
 
 ```{r}
 # preprocessing 
@@ -49,8 +49,6 @@ print(missing_counts)
 ```
 
 All Nan cell values were checked. Some of them had missing values, which were filled with the median value of each column. Given that the dataset size was relatively small to begin with, it did not feel fitting to further reduce the dataset by dropping the entire row of data that contained a Nan.
-
-
 
 ```{r}
 
@@ -95,11 +93,10 @@ youtube$popular<- with(youtube,ifelse(view_count>200000,1,0))
 
 head(youtube)
 ```
+
 The last step of data preprocessing is removing the unwanted columns. Columns like superbowl_ads_dot_com_url, youtube_url, id,kind, etag, published_at, title, description, thumbnail, channel_title, category_id, and favorite_count are not necessary for the goal of predicting what makes a popular superbowl ad. These columns were mostly text data that would not work for a logistic regression model.
 
-
 ## EDA
-
 
 ```{r}
 #EDA plots 
@@ -144,11 +141,8 @@ ggplot(data=youtube,aes(x=popular))+geom_bar(fill= "skyblue")+labs(title="Popula
 
 
 ```
-The above plot shows the average viewership of superbowl ads by year. 2012 had the highest average viewership followed by 2017 and 2020. This provides a visual of the relative increase in average viewership per superbowl ad. The total view by commercial type plot shows the total view counts across the different types of commercials. It can clearly be seen that the funny commercials and commercials that show products quickly have performed well in the past based on total view counts. Lastly the popular plot shows the counts of popular and unpopular superbowl commercials determined by our cutoff value of greater than 200,000 views. There are disproportionately more unpopular commercials as opposed to popular commercials per our metric. 
 
-
-
-
+The above plot shows the average viewership of superbowl ads by year. 2012 had the highest average viewership followed by 2017 and 2020. This provides a visual of the relative increase in average viewership per superbowl ad. The total view by commercial type plot shows the total view counts across the different types of commercials. It can clearly be seen that the funny commercials and commercials that show products quickly have performed well in the past based on total view counts. Lastly the popular plot shows the counts of popular and unpopular superbowl commercials determined by our cutoff value of greater than 200,000 views. There are disproportionately more unpopular commercials as opposed to popular commercials per our metric.
 
 ## Model
 
@@ -163,33 +157,30 @@ car::vif(logit.reg)
 
 Like count and show product quickly were the only two significant predictors in the model with a p value below 0.05, resulting in the following model.
 
-Assessing the variance inflation factors to check for multicollinearity, it can be seen that this dataset does not exhibit multicollinearity. All of our vif values are within a reasonable range being under 5 to indicate that there is no multicollinearity. . 
+Assessing the variance inflation factors to check for multicollinearity, it can be seen that this dataset does not exhibit multicollinearity. All of the vif values are within a reasonable range being under 5 to indicate that there is no multicollinearity.
 
 $logit(p)=0.1195+1.275\text{show_product_quickly}+8.454e^{-06}\text{like_count}$
-
 
 ```{r}
 logit.reg2<- glm(popular ~show_product_quickly+like_count,data=youtube)
 summary(logit.reg2)
 ```
 
-$$logit(p)=0.1221+0.1100\text{show_product_quickly}+5.443e^{-06}\text{like_count}$$
-
+$$
+logit(p)=0.1221+0.1100\text{show_product_quickly}+5.443e^{-06}\text{like_count}
+$$
 
 If a commercial shows their product quickly, odds of popularity increase by $e^{0.1221}=1.12986708284$
-
 
 Per a unit increase in like count, the odds of popularity increase by $e^{5.443e^{-06}}=1.00000544201$
 
 ## Analysis
 
-
 ```{r}
-ggplot(data=youtube,aes(x=like_count,y=popular))+geom_jitter(alpha=0.5, height=0.1) + geom_smooth(method='glm', method.args=list(family='binomial'), se=TRUE) + labs(x='like_count', y='Popular?: 0 = No, 1 = Yes')
+ggplot(data=youtube,aes(x=like_count,y=popular))+geom_jitter(alpha=0.5, height=0.1) + geom_smooth(method='glm', method.args=list(family='binomial'), se=TRUE) + labs(x='like_count', y='Popular?: 0 = No, 1 = Yes')+labs(title="Model plot")
 ```
 
 It appears once the feature like counts hits a certain point, the video will be popular.
-
 
 ```{r}
 arm::binnedplot( x=logit.reg$fitted, y=logit.reg$resid, xlab="Predicted Probabilities", main="Bin Resid vs. Pred Prob", col.int = FALSE)
@@ -197,16 +188,12 @@ arm::binnedplot( x=logit.reg$fitted, y=logit.reg$resid, xlab="Predicted Probabil
 
 The residuals appear evenly distributed over and under the line and does not feature any patterns. There is likely an outlier at roughly 0.5, 0.3 in the Bin residual vs Predicted Probabilities graph, but it is difficult to comment how exactly it has affected the data.
 
-
 ```{r}
 1-pchisq(logit.reg$deviance, logit.reg$df.residual)
 ```
 
 With a value of 1 from the chi squared test, it suggests that we cannot reject the null hypothesis of the logistic regression being a good fit for the data. The logistic regression seems like an appropriate model for this dataset.
 
-
-
 ## Conclusion
 
-
-With a strong logistic model that follows logistic regression assumptions from the ads from 2000 to 2021, brands that are looking to make a popular commercial for Superbowls should look to show their product quickly, and to have a likeable ad on Youtube. However, it is worth noting that the demarcation line for what consitutes a popular commercial was semi arbitrarily selected at a value of 200,000 views, and a shift up or down on that valuecould have easily shifted the significance and specific values of the logistic model that was generated.
+With a strong logistic model that follows logistic regression assumptions from the ads from 2000 to 2021, brands that are looking to make a popular commercial for Superbowls should look to show their product quickly, and to have a likeable ad on Youtube. However, it is worth noting that the demarcation line for what consitutes a popular commercial was semi arbitrarily selected at a value of 200,000 views, and a shift up or down on that value could have easily shifted the significance and specific values of the logistic model that was generated. Further analysis into what caused the one outlier or a dataset that includes the Superbowl advertisements since 2021 would increase the accuracy of the logistic regression model.
