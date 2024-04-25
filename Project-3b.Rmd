@@ -30,22 +30,17 @@ The dataset contains 247 observations of 25 variables. A derived boolean variabl
 ```{r}
 # preprocessing 
 num_columns <- ncol(youtube)
-print(paste("Total Columns: ", num_columns))
 
 #get col names 
 #also check for nans
 columns =colnames(youtube)
-print(columns)
 nas <- colSums(is.na(youtube))
 
 #find cols w nans
 cols_w_nas <- names(nas[nas > 0])
-print("cols w Nans")
-print(cols_w_nas)
 
 #get the total missing for each col and print
 missing_counts <- colSums(is.na(youtube))
-print(missing_counts)
 ```
 
 All Nan cell values were checked. Some of them had missing values, which were filled with the median value of each column. Given that the dataset size was relatively small to begin with, it did not feel fitting to further reduce the dataset by dropping the entire row of data that contained a Nan.
@@ -61,12 +56,10 @@ for (col in numeric_cols) {
 
 youtube <- youtube[!is.na(youtube$published_at), ]
 
-head(youtube)
+
 
 #check again to see if fixes worked. 
 missing_counts <- colSums(is.na(youtube))
-print(missing_counts)
-
 ```
 
 ```{r}
@@ -91,7 +84,6 @@ youtube <- subset(youtube, select = -c(brand,
                                   favorite_count))
 youtube$popular<- with(youtube,ifelse(view_count>200000,1,0))
 
-head(youtube)
 ```
 
 The last step of data preprocessing is removing the unwanted columns. Columns like superbowl_ads_dot_com_url, youtube_url, id,kind, etag, published_at, title, description, thumbnail, channel_title, category_id, and favorite_count are not necessary for the goal of predicting what makes a popular superbowl ad. These columns were mostly text data that would not work for a logistic regression model.
