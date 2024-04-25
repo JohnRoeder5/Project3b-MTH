@@ -122,6 +122,23 @@ logit.reg<- glm(popular ~ funny+ show_product_quickly+patriotic+celebrity+danger
 summary(logit.reg)
 ```
 
+Like count and show product quickly were the only two significant predictors in the model with a p value below 0.05.  The intercept had a p value of 0.09 and was deemed significant enough to be put into the model, resulting in the following model.
+
+$logit(p)=0.1195+1.275\text{show_product_quickly}+8.454e^{-06}\text{like_count}$
+
+
 ## Analysis
+
+
+```{r}
+ggplot(data=youtube,aes(x=like_count,y=popular))+geom_jitter(alpha=0.5, height=0.1) + geom_smooth(method='glm', method.args=list(family='binomial'), se=TRUE) + labs(x='like_count', y='Popular?: 0 = No, 1 = Yes')
+```
+```{r}
+arm::binnedplot( x=logit.reg$fitted, y=logit.reg$resid, xlab="Predicted Probabilities", main="Bin Resid vs. Pred Prob", col.int = FALSE)
+```
+
+```{r}
+1-pchisq(logit.reg$deviance, logit.reg$df.residual)
+```
 
 ## Conclusion
