@@ -144,26 +144,24 @@ Given that the response variable is binary, it made sense to settle on a logisti
 ```{r}
 logit.reg<- glm(popular ~ funny+ show_product_quickly+patriotic+celebrity+danger+animals+use_sex+like_count+dislike_count,data=youtube)
 summary(logit.reg)
-
-
-#check for multicollinearity
-car::vif(logit.reg)
 ```
 
 Like count and show product quickly were the only two significant predictors in the model with a p value below 0.05, resulting in the following model.
 
-Assessing the variance inflation factors to check for multicollinearity, it can be seen that this dataset does not exhibit multicollinearity. All of the vif values are within a reasonable range being under 5 to indicate that there is no multicollinearity.
-
-$logit(p)=0.1195+1.275\text{show_product_quickly}+8.454e^{-06}\text{like_count}$
-
 ```{r}
 logit.reg2<- glm(popular ~show_product_quickly+like_count,data=youtube)
 summary(logit.reg2)
-```
 
+#check for multicollinearity
+car::vif(logit.reg2)
+```
 $$
 logit(p)=0.1221+0.1100\text{show_product_quickly}+5.443e^{-06}\text{like_count}
 $$
+
+Assessing the variance inflation factors to check for multicollinearity, it can be seen that this dataset does not exhibit multicollinearity. All of the vif values are within a reasonable range being under 5 to indicate that there is no multicollinearity.
+
+
 
 If a commercial shows their product quickly, odds of popularity increase by $e^{0.1221}=1.12986708284$
 
