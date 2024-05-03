@@ -1,5 +1,5 @@
 ---
-title: SuperBowl Commercial Variance
+title: SuperBowl Commercial Popularity Factors
 author: "John Roeder, Chris He, Malakai Vetock"
 date: "`r Sys.Date()`"
 output:
