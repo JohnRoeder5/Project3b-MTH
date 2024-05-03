@@ -1,5 +1,5 @@
 ---
-title: project3b
+title: SuperBowl Commercial Variance
 author: "John Roeder, Chris He, Malakai Vetock"
 date: "`r Sys.Date()`"
 output:
@@ -25,7 +25,7 @@ library(leaps)
 youtube <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-02/youtube.csv')
 ```
 
-The dataset contains 247 observations of 25 variables. A derived boolean variable called `popular` was created using `view_count`, using an arbitrarily selected limit of 200,000 as a marker for a popular commercial video. As commercials ran during the Superbowl are expensive, it makes sense to set the standards of `popular` higher rather than lower. `popular` will be the response variable investigated in this project.
+The dataset contains 247 observations of 25 variables. A derived boolean variable called `popular` was created using `view_count`, using an arbitrarily selected limit of 200,000 as a marker for a popular commercial video, served as the response variable. As commercials ran during the Superbowl are expensive, it makes sense to set the standards of `popular` higher rather than lower. `popular` will be the response variable investigated in this project.
 
 ```{r}
 # preprocessing 
@@ -103,7 +103,8 @@ ggplot(year_viewcount, aes(x = as.factor(year), y = avg_view_count)) +
   labs(title = "AVG View Count by Year",
        x = "Year",
        y = "AVG View Count") +
-  theme_minimal()
+  theme_minimal()+ 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
 commercial_viewcount <- youtube %>%
@@ -129,7 +130,7 @@ ggplot(commercial_viewcount, aes(x = commercial_type, y = total_viewcount)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
-ggplot(data=youtube,aes(x=popular))+geom_bar(fill= "skyblue")+labs(title="Popular plot")
+ggplot(data=youtube,aes(x=popular))+geom_bar(fill= "skyblue")+labs(title="Popularity Count plot")
 
 
 ```
@@ -137,6 +138,8 @@ ggplot(data=youtube,aes(x=popular))+geom_bar(fill= "skyblue")+labs(title="Popula
 The above plot shows the average viewership of superbowl ads by year. 2012 had the highest average viewership followed by 2017 and 2020. This provides a visual of the relative increase in average viewership per superbowl ad. The total view by commercial type plot shows the total view counts across the different types of commercials. It can clearly be seen that the funny commercials and commercials that show products quickly have performed well in the past based on total view counts. Lastly the popular plot shows the counts of popular and unpopular superbowl commercials determined by our cutoff value of greater than 200,000 views. There are disproportionately more unpopular commercials as opposed to popular commercials per our metric.
 
 ## Model
+
+Given that the response variable is binary, it made sense to settle on a logistic regression model
 
 ```{r}
 logit.reg<- glm(popular ~ funny+ show_product_quickly+patriotic+celebrity+danger+animals+use_sex+like_count+dislike_count,data=youtube)
@@ -188,4 +191,4 @@ With a value of 1 from the chi squared test, it suggests that we cannot reject t
 
 ## Conclusion
 
-With a strong logistic model that follows logistic regression assumptions from the ads from 2000 to 2021, brands that are looking to make a popular commercial for Superbowls should look to show their product quickly, and to have a likeable ad on Youtube. However, it is worth noting that the demarcation line for what consitutes a popular commercial was semi arbitrarily selected at a value of 200,000 views, and a shift up or down on that value could have easily shifted the significance and specific values of the logistic model that was generated. Further analysis into what caused the one outlier or a dataset that includes the Superbowl advertisements since 2021 would increase the accuracy of the logistic regression model.
+With a strong logistic model that follows logistic regression assumptions from the ads from 2000 to 2021, brands that are looking to make a popular commercial for Superbowls should look to show their product quickly, and to have a likeable ad on Youtube. However, it is worth noting that the demarcation line for what consitutes a popular commercial was semi arbitrarily selected at a value of 200,000 views, and a shift up or down on that value could have easily shifted the significance and specific values of the logistic model that was generated. Further analysis into what caused the one outlier or a dataset that includes the Superbowl advertisements since 2021 would increase the accuracy of the logistic regression model. Adjusting raw like count into a like/dislike ratio would likely give a better interpretation of results as raw like count may be skewed towards already successful videos
